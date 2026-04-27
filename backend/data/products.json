@@ -1,0 +1,23 @@
+[
+  {
+    "id": "1",
+    "name": "Wireless Headphones",
+    "description": "Premium noise-cancelling headphones",
+    "price": 299.99,
+    "category": "electronics"
+  },
+  {
+    "id": "2",
+    "name": "Smart Watch",
+    "description": "Fitness tracking smartwatch",
+    "price": 199.99,
+    "category": "electronics"
+  },
+  {
+    "id": "3",
+    "name": "Running Shoes",
+    "description": "Comfortable running shoes",
+    "price": 89.99,
+    "category": "sports"
+  }
+]
