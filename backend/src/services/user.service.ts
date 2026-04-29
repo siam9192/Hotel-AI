@@ -1,30 +1,47 @@
-// filepath: ai-agent/src/services/user.service.ts
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  preferences: any;
-}
+import { UserModel, IUser } from "../models/user.model";
+import { UserRole } from "../interfaces/user.interface";
+import { AppError } from "../utils/error.utils";
 
-class UserService {
-  private users: Map<string, User> = new Map();
-
-  createUser(id: string, name: string, email: string): User {
-    const user = { id, name, email, preferences: {} };
-    this.users.set(id, user);
-    return user;
+export class UserService {
+  async create(data: Partial<IUser>): Promise<IUser> {
+    const user = new UserModel(data);
+    return user.save();
   }
 
-  getUser(id: string): User | undefined {
-    return this.users.get(id);
-  }
-
-  updatePreferences(id: string, preferences: any): User | undefined {
-    const user = this.users.get(id);
-    if (user) {
-      user.preferences = preferences;
+  async findById(id: string): Promise<IUser> {
+    const user = await UserModel.findOne({ id });
+    if (!user) {
+      throw new AppError("User not found", 404);
     }
     return user;
+  }
+
+  async findByEmail(email: string): Promise<IUser | null> {
+    return UserModel.findOne({ email: email.toLowerCase() });
+  }
+
+  async findAll(): Promise<IUser[]> {
+    return UserModel.find();
+  }
+
+  async update(id: string, data: Partial<IUser>): Promise<IUser> {
+    const user = await UserModel.findOneAndUpdate({ id }, data, { new: true });
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+    return user;
+  }
+
+  async delete(id: string): Promise<IUser> {
+    const user = await UserModel.findOneAndDelete({ id });
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+    return user;
+  }
+
+  async findByRole(role: UserRole): Promise<IUser[]> {
+    return UserModel.find({ role });
   }
 }
 
