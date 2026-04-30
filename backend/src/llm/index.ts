@@ -7,7 +7,7 @@ import { Runnable } from "@langchain/core/runnables";
 import { config } from "../config";
 
 const llm = new ChatGoogleGenerativeAI({
-  model: "gemini-3-flash-preview",
+  model: "gemini-3.1-flash-lite-preview",
   apiKey: config.geminiApiKey,
 });
 

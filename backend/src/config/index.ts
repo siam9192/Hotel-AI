@@ -10,5 +10,5 @@ export const config = {
   nodeEnv: process.env.NODE_ENV || "development",
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || "24h",
   jwtSecret: process.env.JWT_SECRET || "default-secret-change-in-production",
-  mongoUri: process.env.MONGO_URI || "mongodb://localhost:27017/hotel",
+  db_url: process.env.DB_URL || "mongodb://localhost:27017/hotel",
 };

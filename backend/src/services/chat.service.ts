@@ -30,59 +30,57 @@ class chatService {
     user?: { userId: string; userRole: UserRole },
     history: any[] = [],
   ) {
-  try {
-  const prompt = GET_PROMPT(message, user, history);
+    try {
+      const prompt = GET_PROMPT(message, user, history);
 
-  let messages: (HumanMessage | ToolMessage | AIMessage)[] = [
-    new HumanMessage(prompt),
-  ];
+      let messages: (HumanMessage | ToolMessage | AIMessage)[] = [
+        new HumanMessage(prompt),
+      ];
 
-  let response = await llmWithTools.invoke(messages);
+      console.log(11)
+      let response = await llmWithTools.invoke(messages);
 
-  while (response.tool_calls && response.tool_calls.length > 0) {
-    messages.push(response);
+      console.log(response)
+      while (response.tool_calls && response.tool_calls.length > 0) {
+        messages.push(response);
+        for (const toolCall of response.tool_calls) {
+          let result: string;
 
-    for (const toolCall of response.tool_calls) {
-      let result: string;
+          try {
+            const selectedTool = toolsByName[toolCall.name];
 
-      try {
-        const selectedTool = toolsByName[toolCall.name];
+            if (!selectedTool) {
+              result = `Error: Tool "${toolCall.name}" not found.`;
+            } else {
+              result = await selectedTool.call(toolCall.args);
+            }
 
-     
+            console.log("Tool Result:", result);
+          } catch (error) {
+            result = `Error executing tool "${
+              toolCall.name
+            }": ${error instanceof Error ? error.message : String(error)}`;
+          }
 
-        if (!selectedTool) {
-          result = `Error: Tool "${toolCall.name}" not found.`;
-        } else {
-          result = await selectedTool.call(toolCall.args);
+          messages.push(
+            new ToolMessage({
+              tool_call_id: toolCall.id,
+              content: result,
+            }),
+          );
         }
 
-        console.log("Tool Result:", result);
-      } catch (error) {
-        result = `Error executing tool "${
-          toolCall.name
-        }": ${error instanceof Error ? error.message : String(error)}`;
+        response = await llmWithTools.invoke(messages);
       }
 
-      messages.push(
-        new ToolMessage({
-          tool_call_id: toolCall.id,
-          content: result,
-        })
-      );
+      // ✅ final normal response (no tools)
+      return response.content as string;
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+
+      return `I apologize, but I encountered an error processing your request. ${errorMessage}`;
     }
-console.log(11)
-    response = await llmWithTools.invoke(messages);
-  }
-
-  // ✅ final normal response (no tools)
-  return response.content as string;
-} catch (error) {
-  const errorMessage =
-    error instanceof Error ? error.message : String(error);
-
-  return `I apologize, but I encountered an error processing your request. ${errorMessage}`;
-}
-
   }
 }
 
