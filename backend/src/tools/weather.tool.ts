@@ -126,3 +126,5 @@ export const forecastTool: DynamicStructuredTool<typeof forecastSchema> = tool(
       "Get weather forecast for a location for the next few days. Useful for planning outdoor activities.",
   },
 );
+
+export const weatherTools = [weatherTool, forecastTool];

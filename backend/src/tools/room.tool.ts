@@ -1,12 +1,7 @@
-import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
-import { roomService } from "../services/room.service";
-import { bookingService } from "../services/booking.service";
-import { RoomType } from "../interfaces/room.interface";
-import { BookingStatus } from "../interfaces/booking.interface";
-import { AppError } from "../utils/error.utils";
 import { RoomModel } from "../models/room.model";
 import { DynamicStructuredTool, tool } from "@langchain/core/tools";
 import z from "zod";
+import { RoomType } from "../interfaces/room.interface";
 /**
  * Get rooms with optional filters - uses database queries with filters
  * @param options - Filter options for rooms
@@ -82,3 +77,57 @@ export const getRoomsTool: DynamicStructuredTool<typeof getRoomsSchema> = tool(
       "Get rooms with optional filters. You can filter by room numbers, type, price range, amenities, and availability.",
   },
 );
+
+export const getRoomDetailsSchema = z.object({
+  roomId: z.string().optional(),
+  roomNumber: z.number().optional(),
+});
+
+export const getRoomDetailsTool: DynamicStructuredTool<
+  typeof getRoomDetailsSchema
+> = tool(
+  async function ({
+    roomId,
+    roomNumber,
+  }: {
+    roomId?: string;
+    roomNumber?: number;
+  }): Promise<any> {
+    try {
+      let room;
+
+      if (roomId) {
+        room = await RoomModel.findById(roomId);
+      } else if (roomNumber) {
+        room = await RoomModel.findOne({ number: String(roomNumber) });
+      } else {
+        return "Error: Please provide either roomId or roomNumber.";
+      }
+
+      if (!room) {
+        return `Error: Room not found.`;
+      }
+
+      return {
+        success: true,
+        room: {
+          id: room.id,
+          number: room.number,
+          type: room.type,
+          price: room.price,
+          amenities: room.amenities,
+          availability: room.availability,
+          description: room.description,
+        },
+      };
+    } catch (error) {
+      return `Error: Failed to get room details. ${error instanceof Error ? error.message : String(error)}`;
+    }
+  },
+  {
+    name: "getRoomDetails",
+    description: "Get details of a specific room by room ID or room number.",
+  },
+);
+
+export const roomTools = [getRoomsTool, getRoomDetailsTool];

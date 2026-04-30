@@ -432,3 +432,11 @@ export const updateBookingTool: DynamicStructuredTool<
       "Update an existing booking's dates. Provide booking ID, guest ID, and optionally new check-in and check-out dates in ISO format (YYYY-MM-DD).",
   },
 );
+
+export const bookingTools = [
+  bookRoomTool,
+  cancelBookingTool,
+  getBookingDetailsTool,
+  getGuestBookingsTool,
+  updateBookingTool,
+];

@@ -72,6 +72,7 @@ export const getContactInfoTool: DynamicStructuredTool<
   async function ({
     section,
   }: z.infer<typeof contactInfoSchema>): Promise<any> {
+
     try {
       const path = "docs/contact.pdf";
       const loader = new PDFLoader(path);
@@ -113,3 +114,5 @@ export const getContactInfoTool: DynamicStructuredTool<
       "Get the hotel's contact information document. Optionally specify a section.",
   },
 );
+
+export const policyTools = [getPolicyTool, getContactInfoTool];
