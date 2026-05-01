@@ -33,16 +33,7 @@ ${user ? `- User ID: ${user.userId}
 - If data is missing or unavailable, explain politely.
 - If the request is unclear, ask a follow-up question.
 
-## Conversation Context
-Current message:
-"${message}"
 
-${
-  history.length > 0
-    ? `Previous messages:
-${history.map((h, i) => `${i + 1}. ${h.content}`).join("\n")}`
-    : "No previous conversation."
-}
 
 ## Behavior Rules
 - Prioritize accuracy over assumptions.
@@ -51,3 +42,14 @@ ${history.map((h, i) => `${i + 1}. ${h.content}`).join("\n")}`
 
 `;
 };
+
+// ## Conversation Context
+// Current message:
+// "${message}"
+
+// ${
+//   history.length > 0
+//     ? `Previous messages:
+// ${history.map((h, i) => `${i + 1}. ${h.content}`).join("\n")}`
+//     : "No previous conversation."
+// }

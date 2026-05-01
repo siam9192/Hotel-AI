@@ -1,4 +1,3 @@
-import { get } from "mongoose";
 import { UserRole } from "../interfaces/user.interface";
 import { llmWithTools } from "../llm";
 import { getRoomDetailsTool, getRoomsTool } from "../tools/room.tool";
@@ -11,6 +10,11 @@ import {
 } from "../tools/booking.tool";
 import { getContactInfoTool, getPolicyTool } from "../tools/policy.tool";
 import { AIMessage, HumanMessage, ToolMessage } from "@langchain/core/messages";
+
+interface History extends Record<
+  "HumanMessage" | "AIMessage" | "ToolMessage",
+  any
+> {}
 
 const toolsByName: Record<string, any> = {
   getRooms: getRoomsTool,
@@ -28,19 +32,27 @@ class chatService {
   async processMessage(
     message: string,
     user?: { userId: string; userRole: UserRole },
-    history: any[] = [],
+    history: History[] = [],
   ) {
     try {
-      const prompt = GET_PROMPT(message, user, history);
+      const prompt = GET_PROMPT(message, user);
 
       let messages: (HumanMessage | ToolMessage | AIMessage)[] = [
         new HumanMessage(prompt),
       ];
 
-      console.log(11)
+      history.forEach((item) => {
+        if (item.HumanMessage) {
+          messages.push(new HumanMessage(item.HumanMessage));
+        } else if (item.AIMessage) {
+          messages.push(new AIMessage(item.AIMessage));
+        } else if (item.ToolMessage) {
+          messages.push(new ToolMessage(item.ToolMessage));
+        }
+      });
+
       let response = await llmWithTools.invoke(messages);
 
-      console.log(response)
       while (response.tool_calls && response.tool_calls.length > 0) {
         messages.push(response);
         for (const toolCall of response.tool_calls) {
@@ -54,8 +66,6 @@ class chatService {
             } else {
               result = await selectedTool.call(toolCall.args);
             }
-
-            console.log("Tool Result:", result);
           } catch (error) {
             result = `Error executing tool "${
               toolCall.name
@@ -73,7 +83,6 @@ class chatService {
         response = await llmWithTools.invoke(messages);
       }
 
-      // ✅ final normal response (no tools)
       return response.content as string;
     } catch (error) {
       const errorMessage =

@@ -2,6 +2,9 @@
 import express from "express";
 import { config } from "./config";
 import chatRoutes from "./routes/chat.routes";
+import authRoutes from "./routes/auth.routes";
+import userRoutes from "./routes/user.routes";
+import roomRoutes from "./routes/room.routes";
 import { logger } from "./utils/logger";
 
 const app = express();
@@ -23,6 +26,9 @@ app.use((req, res, next) => {
 
 // Routes
 app.use("/api", chatRoutes);
+app.use("/api", authRoutes);
+app.use("/api", userRoutes);
+app.use("/api", roomRoutes);
 
 // Health check
 app.get("/health", (req, res) => {
