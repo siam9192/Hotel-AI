@@ -2,17 +2,16 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { config } from "../config";
 import { AppError } from "../utils/error.utils";
+import { UserRole } from "../interfaces/user.interface";
 
-export interface AuthRequest extends Request {
-  user?: {
-    id: string;
-    email: string;
-    role: string;
-  };
+export interface AuthUser {
+  id: string;
+  email: string;
+  role: UserRole;
 }
 
 export const authMiddleware = (
-  req: AuthRequest,
+  req: Request,
   res: Response,
   next: NextFunction,
 ) => {
@@ -25,11 +24,7 @@ export const authMiddleware = (
 
     const token = authHeader.split(" ")[1];
 
-    const decoded = jwt.verify(token, config.jwtSecret as string) as {
-      id: string;
-      email: string;
-      role: string;
-    };
+    const decoded = jwt.verify(token, config.jwtSecret as string) as AuthUser;
 
     req.user = {
       id: decoded.id,
@@ -50,7 +45,7 @@ export const authMiddleware = (
 };
 
 export const optionalAuthMiddleware = (
-  req: AuthRequest,
+  req: Request,
   res: Response,
   next: NextFunction,
 ) => {
@@ -63,11 +58,7 @@ export const optionalAuthMiddleware = (
 
     const token = authHeader.split(" ")[1];
 
-    const decoded = jwt.verify(token, config.jwtSecret as string) as {
-      id: string;
-      email: string;
-      role: string;
-    };
+    const decoded = jwt.verify(token, config.jwtSecret as string) as AuthUser;
 
     req.user = {
       id: decoded.id,

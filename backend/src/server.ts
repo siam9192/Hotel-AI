@@ -11,7 +11,9 @@ app.listen(config.port, async () => {
 
   console.log(
     await chatServices.processMessage(
-      "Do you have any available rooms?",
+      {
+        newMessage: "What the weather today in the hotel area?",
+      },
       undefined,
     ),
   );

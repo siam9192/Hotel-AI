@@ -9,12 +9,13 @@ import {
   getBookingDetailsTool,
 } from "../tools/booking.tool";
 import { getContactInfoTool, getPolicyTool } from "../tools/policy.tool";
-import { AIMessage, HumanMessage, ToolMessage } from "@langchain/core/messages";
-
-interface History extends Record<
-  "HumanMessage" | "AIMessage" | "ToolMessage",
-  any
-> {}
+import {
+  AIMessage,
+  HumanMessage,
+  SystemMessage,
+  ToolMessage,
+} from "@langchain/core/messages";
+import { ProcessMessagePayload } from "../interfaces/chat.interface";
 
 const toolsByName: Record<string, any> = {
   getRooms: getRoomsTool,
@@ -30,18 +31,16 @@ const toolsByName: Record<string, any> = {
 
 class chatService {
   async processMessage(
-    message: string,
-    user?: { userId: string; userRole: UserRole },
-    history: History[] = [],
+    payload: ProcessMessagePayload,
+    user?: { userId: string; userRole: UserRole }|undefined,
   ) {
     try {
-      const prompt = GET_PROMPT(message, user);
+      const prompt = GET_PROMPT(user);
 
-      let messages: (HumanMessage | ToolMessage | AIMessage)[] = [
-        new HumanMessage(prompt),
-      ];
+      let messages: (SystemMessage | HumanMessage | ToolMessage | AIMessage)[] =
+        [new SystemMessage(prompt), new HumanMessage(payload.newMessage)];
 
-      history.forEach((item) => {
+      payload.history?.forEach((item) => {
         if (item.HumanMessage) {
           messages.push(new HumanMessage(item.HumanMessage));
         } else if (item.AIMessage) {

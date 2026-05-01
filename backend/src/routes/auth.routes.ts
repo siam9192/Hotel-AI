@@ -1,26 +1,19 @@
 import { Router } from "express";
 import { authController } from "../controllers/auth.controller";
-import { authMiddleware, AuthRequest } from "../middlewares/auth.middleware";
-import { Response, NextFunction } from "express";
+import { authMiddleware } from "../middlewares/auth.middleware";
 
 const router = Router();
 
 // Public routes
-router.post("/auth/signup", (req, res, next) => authController.signup(req, res, next));
-router.post("/auth/signin", (req, res, next) => authController.signin(req, res, next));
+router.post("/auth/signup", authController.signup);
+router.post("/auth/signin", authController.signin);
 
 // Protected routes
 router.post(
   "/auth/change-password/:id",
   authMiddleware,
-  (req: AuthRequest, res: Response, next: NextFunction) =>
-    authController.changePassword(req, res, next),
+  authController.changePassword,
 );
-router.get(
-  "/auth/me/:id",
-  authMiddleware,
-  (req: AuthRequest, res: Response, next: NextFunction) =>
-    authController.getMe(req, res, next),
-);
+router.get("/auth/me/:id", authMiddleware, authController.getMe);
 
 export default router;
