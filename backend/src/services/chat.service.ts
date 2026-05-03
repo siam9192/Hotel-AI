@@ -16,6 +16,7 @@ import {
   ToolMessage,
 } from "@langchain/core/messages";
 import { ProcessMessagePayload } from "../interfaces/chat.interface";
+import { createFinalResponse } from "../tools/utils.tool";
 
 const toolsByName: Record<string, any> = {
   getRooms: getRoomsTool,
@@ -27,12 +28,13 @@ const toolsByName: Record<string, any> = {
   getContactInfo: getContactInfoTool,
   getWeather: weatherTool,
   forecastWeather: forecastTool,
+  createFinalResponse: createFinalResponse,
 };
 
 class chatService {
   async processMessage(
     payload: ProcessMessagePayload,
-    user?: { userId: string; userRole: UserRole }|undefined,
+    user?: { userId: string; userRole: UserRole } | undefined,
   ) {
     try {
       const prompt = GET_PROMPT(user);
@@ -64,6 +66,10 @@ class chatService {
               result = `Error: Tool "${toolCall.name}" not found.`;
             } else {
               result = await selectedTool.call(toolCall.args);
+              if (toolCall.name === "createFinalResponse") {
+                // If the tool is createFinalResponse, we assume it returns the final response and break the loop
+                break;
+              }
             }
           } catch (error) {
             result = `Error executing tool "${

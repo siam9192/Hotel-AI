@@ -1,6 +1,7 @@
 import z from "zod";
 import { RoomType } from "../interfaces/room.interface";
 import { BookingStatus } from "../interfaces/booking.interface";
+import { DynamicStructuredTool, tool } from "@langchain/core/tools";
 
 const roomSchema = z.object({
   id: z.string(),
@@ -29,11 +30,11 @@ export const finalResponseSchema = z.object({
     .describe("The final response message to be sent to the user"),
   data: z
     .object({
-      action: z
-        .string()
-        .describe(
-          "The action to be taken by the user, e.g., 'bookRoom', 'getPolicy', 'searchRooms', etc.",
-        ),
+      // action: z
+      //   .string()
+      //   .describe(
+      //     "The action to be taken by the user, e.g., 'bookRoom', 'getPolicy', 'searchRooms', etc.",
+      //   ),
       rooms: z
         .array(roomSchema)
         .optional()
@@ -61,30 +62,30 @@ export const finalResponseSchema = z.object({
 
 export type FinalResponse = z.infer<typeof finalResponseSchema>;
 
-export const getFinalResponse = (
-  response: FinalResponse,
-): FinalResponse => {
-  
+export const getFinalResponse = (response: FinalResponse): FinalResponse => {
   // Default response structure
   return response;
 };
 
-export const createFinalResponse = (
-  message: string,
-  action: string,
-  options?: {
-    rooms?: z.infer<typeof roomSchema>[];
-    bookingDetails?: z.infer<typeof bookingSchema>;
+export const createFinalResponse: DynamicStructuredTool<
+  typeof finalResponseSchema
+> = tool(
+  function (response: FinalResponse) {
+    return finalResponseSchema.parse({
+      message: response.message,
+      data: {
+        ...(response.data?.rooms && { rooms: response.data.rooms }),
+        ...(response.data?.bookingDetails && {
+          bookingDetails: response.data.bookingDetails,
+        }),
+      },
+    });
   },
-): FinalResponse => {
-  return finalResponseSchema.parse({
-    message,
-    data: {
-      action,
-      ...(options?.rooms && { rooms: options.rooms }),
-      ...(options?.bookingDetails && {
-        bookingDetails: options.bookingDetails,
-      }),
-    },
-  });
-};
+  {
+    name: "createFinalResponse",
+    description:
+      "Creates a structured final response object to be sent to the user, containing a message and optional data related to the action taken.",
+  },
+);
+
+export const utilTools = [createFinalResponse]

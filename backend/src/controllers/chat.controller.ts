@@ -1,12 +1,9 @@
 import { Request, Response } from "express";
 import { chatServices } from "../services/chat.service";
 import { catchAsync } from "../utils/error.utils";
-import { ChatHistory } from "../interfaces/chat.interface";
 
 export class ChatController {
-  handleChat = catchAsync(async (req: Request, res: Response) => {
-    
-
+  handleChat = catchAsync(async (req, res: Response) => {
     const user = req.user
       ? {
           userId: req.user.id,
@@ -14,10 +11,7 @@ export class ChatController {
         }
       : undefined;
 
-    const response = await chatServices.processMessage(
-      req.body,
-      user
-    );
+    const response = await chatServices.processMessage(req.body, user);
 
     res.json({ response });
   });

@@ -4,6 +4,7 @@ import { UserModel, IUser } from "../models/user.model";
 import { AppError } from "../utils/error.utils";
 import { UserRole } from "../interfaces/user.interface";
 import { config } from "../config";
+import { objectId } from "../utils/helpers";
 
 interface AuthPayload {
   id: string;
@@ -22,7 +23,7 @@ export class AuthService {
 
   private generateToken(user: IUser): string {
     const payload: AuthPayload = {
-      id: user.id,
+      id: user._id.toString(),
       email: user.email,
       role: user.role,
     };
@@ -42,10 +43,9 @@ export class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);
-    const id = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
+  
     const user = await UserModel.create({
-      id,
+      
       name,
       email: email.toLowerCase(),
       hashedPassword,
@@ -79,7 +79,7 @@ export class AuthService {
     currentPassword: string,
     newPassword: string,
   ): Promise<void> {
-    const user = await UserModel.findOne({ id: userId });
+    const user = await UserModel.findOne({ _id: objectId(userId) });
     if (!user) {
       throw new AppError("User not found", 404);
     }
@@ -98,7 +98,7 @@ export class AuthService {
   }
 
   async getMe(userId: string): Promise<IUser> {
-    const user = await UserModel.findOne({ id: userId });
+    const user = await UserModel.findOne({ _id: objectId(userId) });
     if (!user) {
       throw new AppError("User not found", 404);
     }

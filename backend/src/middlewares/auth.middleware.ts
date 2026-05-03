@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import { config } from "../config";
 import { AppError } from "../utils/error.utils";
 import { UserRole } from "../interfaces/user.interface";
+import { RequestWithAuthInfo } from "../interfaces/utils.interface";
 
 export interface AuthUser {
   id: string;
@@ -11,7 +12,7 @@ export interface AuthUser {
 }
 
 export const authMiddleware = (
-  req: Request,
+  reqWithAuthInfo,
   res: Response,
   next: NextFunction,
 ) => {
@@ -45,7 +46,7 @@ export const authMiddleware = (
 };
 
 export const optionalAuthMiddleware = (
-  req: Request,
+  reqWithAuthInfo,
   res: Response,
   next: NextFunction,
 ) => {

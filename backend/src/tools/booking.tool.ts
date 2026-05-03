@@ -1,7 +1,7 @@
-import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
+
 import { roomService } from "../services/room.service";
 import { bookingService } from "../services/booking.service";
-import { RoomType } from "../interfaces/room.interface";
+
 import { BookingStatus } from "../interfaces/booking.interface";
 import { AppError } from "../utils/error.utils";
 import { RoomModel } from "../models/room.model";

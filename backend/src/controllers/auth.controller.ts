@@ -3,7 +3,7 @@ import { authService } from "../services/auth.service";
 import { catchAsync } from "../utils/error.utils";
 
 export class AuthController {
-  signup = catchAsync(async (req: Request, res: Response) => {
+  signup = catchAsync(async (req, res: Response) => {
     const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
@@ -14,7 +14,7 @@ export class AuthController {
     res.status(201).json({ user, token });
   });
 
-  signin = catchAsync(async (req: Request, res: Response) => {
+  signin = catchAsync(async (req, res: Response) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -25,7 +25,7 @@ export class AuthController {
     res.json({ user, token });
   });
 
-  changePassword = catchAsync(async (req: Request, res: Response) => {
+  changePassword = catchAsync(async (req, res: Response) => {
     const { id } = req.params as { id: string };
     const { currentPassword, newPassword } = req.body;
 
@@ -37,7 +37,7 @@ export class AuthController {
     res.json({ message: "Password changed successfully" });
   });
 
-  getMe = catchAsync(async (req: Request, res: Response) => {
+  getMe = catchAsync(async (req, res: Response) => {
     const { id } = req.params as { id: string };
     const user = await authService.getMe(id);
     res.json(user);
