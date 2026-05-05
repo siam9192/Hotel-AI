@@ -1,6 +1,7 @@
 import { BookingModel, IBooking } from "../models/booking.model";
 import { BookingStatus } from "../interfaces/booking.interface";
 import { AppError } from "../utils/error.utils";
+import { ObjectId, Types } from "mongoose";
 
 export class BookingService {
   /**
@@ -170,7 +171,7 @@ export class BookingService {
    * Check if room is available for date range
    */
   async isRoomAvailable(
-    roomId: string,
+    roomId: Types.ObjectId,
     checkInDate: Date,
     checkOutDate: Date,
     excludeBookingId?: string,

@@ -4,8 +4,11 @@ import bcrypt from "bcryptjs";
 import { UserModel } from "../models/user.model";
 import { adminDemoUsers, guestDemoUsers } from "../demo-data/users";
 import { roomsDemoData } from "../demo-data/rooms";
+import mongoose from "mongoose";
+import { config } from "../config";
 
 async function initData() {
+  await mongoose.connect(config.db_url)
   console.log("Initializing data...");
   await RoomModel.deleteMany();
   await UserModel.deleteMany();
@@ -19,19 +22,23 @@ async function initData() {
   console.log("Users inserted: ", insertUsers.length);
   console.log("Data initialization complete.");
 }
-
 async function insertUsers(
   users: { name: string; email: string; password: string }[],
-  role: UserRole,
+  role: UserRole
 ) {
-  const insertUsers = users as any[];
+  const insertUsers = await Promise.all(
+    users.map(async (user) => ({
+      name: user.name,
+      email: user.email,
+      hashedPassword: await bcrypt.hash(user.password, 12),
+      role,
+    }))
+  );
 
-  insertUsers.forEach(async (user) => {
-    user.hashedPassword = await bcrypt.hash(user.password, 12);
-    user.role = role;
-  });
+  console.log(insertUsers);
 
   return await UserModel.insertMany(insertUsers);
 }
+
 
 initData();

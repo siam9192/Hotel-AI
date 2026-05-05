@@ -12,7 +12,7 @@ export interface AuthUser {
 }
 
 export const authMiddleware = (
-  reqWithAuthInfo,
+  req:RequestWithAuthInfo,
   res: Response,
   next: NextFunction,
 ) => {
@@ -46,7 +46,7 @@ export const authMiddleware = (
 };
 
 export const optionalAuthMiddleware = (
-  reqWithAuthInfo,
+  req:RequestWithAuthInfo,
   res: Response,
   next: NextFunction,
 ) => {

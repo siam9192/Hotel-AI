@@ -12,5 +12,7 @@ export interface Room {
 export enum RoomType {
     Single = "Single",
     Double = "Double",
-    Suite = "Suite"
+    Suite = "Suite",
+    Deluxe = "Deluxe",
+    Family = "Family"
 }

@@ -12,7 +12,7 @@ app.listen(config.port, async () => {
   console.log(
     await chatServices.processMessage(
       {
-        newMessage: "What the weather today in the hotel area?",
+        newMessage: "show me available rooms",
       },
       undefined,
     ),

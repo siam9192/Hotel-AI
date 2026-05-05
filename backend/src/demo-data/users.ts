@@ -14,16 +14,8 @@ export const guestDemoUsers = [
     email: "nabil@example.com",
     password: "123456"
   },
-  {
-    name: "Mim Akter",
-    email: "mim@example.com",
-    password: "123456"
-  },
-  {
-    name: "Rakib Hossain",
-    email: "rakib@example.com",
-    password: "123456"
-  }
+ 
+  
 ];
 
 export const adminDemoUsers = [

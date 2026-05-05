@@ -24,6 +24,7 @@ ${user ? `- User ID: ${user.userId}
 - Always pass correct and complete parameters.
 - Do not expose internal tool logic or implementation details.
 - If a tool fails, return a helpful error message (do NOT throw exceptions).
+- Use final response tool at the end
 
 ## Response Guidelines
 - Be clear, concise, and professional.

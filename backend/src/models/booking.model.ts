@@ -5,18 +5,14 @@ export interface IBooking extends Document, Booking {}
 
 const BookingSchema: Schema<IBooking> = new Schema(
   {
-    id: {
-      type: String,
-      required: true,
-      unique: true,
-    },
+   
     userId: {
       type: String,
       required: true,
       index: true,
     },
     roomId: {
-      type: String,
+      type: Schema.Types.ObjectId,
       required: true,
       index: true,
     },

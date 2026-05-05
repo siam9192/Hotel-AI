@@ -1,6 +1,8 @@
 import { RoomModel, IRoom } from "../models/room.model";
 import { RoomType } from "../interfaces/room.interface";
 import { AppError } from "../utils/error.utils";
+import { isValidObjectId, Types } from "mongoose";
+import { objectId } from "../utils/helpers";
 
 export class RoomService {
   async create(data: Partial<IRoom>): Promise<IRoom> {
@@ -8,8 +10,9 @@ export class RoomService {
     return room.save();
   }
 
-  async findById(id: string): Promise<IRoom> {
-    const room = await RoomModel.findOne({ id });
+  async findById(id: string|Types.ObjectId): Promise<IRoom> {
+    
+    const room = await RoomModel.findById(id);
     if (!room) {
       throw new AppError("Room not found", 404);
     }
@@ -52,8 +55,11 @@ export class RoomService {
     return RoomModel.find({ price: { $gte: min, $lte: max } });
   }
 
-  async toggleAvailability(id: string): Promise<IRoom> {
-    const room = await RoomModel.findOne({ id });
+  async toggleAvailability(id: Types.ObjectId | string): Promise<IRoom> {
+    if(!isValidObjectId(id)) {
+        id =  objectId(id as string)
+    }
+    const room = await RoomModel.findById(id);
     if (!room) {
       throw new AppError("Room not found", 404);
     }

@@ -8,7 +8,7 @@ import { config } from "../config";
 import { utilTools } from "../tools/utils.tool";
 
 const llm = new ChatGoogleGenerativeAI({
-  model: "gemini-3.1-flash-lite-preview",
+  model: "gemini-2.5-flash",
   apiKey: config.geminiApiKey,
 });
 

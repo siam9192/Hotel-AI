@@ -1,10 +1,8 @@
 
 import { roomService } from "../services/room.service";
 import { bookingService } from "../services/booking.service";
-
 import { BookingStatus } from "../interfaces/booking.interface";
 import { AppError } from "../utils/error.utils";
-import { RoomModel } from "../models/room.model";
 import { DynamicStructuredTool, tool } from "@langchain/core/tools";
 import z from "zod";
 
@@ -54,7 +52,7 @@ export const bookRoomTool: DynamicStructuredTool<typeof bookRoomSchema> = tool(
 
       // Check for conflicting bookings
       const isAvailable = await bookingService.isRoomAvailable(
-        room.id,
+        room._id,
         checkIn,
         checkOut,
       );
@@ -68,12 +66,10 @@ export const bookRoomTool: DynamicStructuredTool<typeof bookRoomSchema> = tool(
       );
       const totalPrice = room.price * nights;
 
-      // Create booking in database
-      const bookingId = `BK-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      // Create booking in databas
       const booking = await bookingService.create({
-        id: bookingId,
+     
         userId: guestId,
-        roomId: room.id,
         checkInDate: checkIn,
         checkOutDate: checkOut,
         totalPrice,
@@ -81,14 +77,14 @@ export const bookRoomTool: DynamicStructuredTool<typeof bookRoomSchema> = tool(
       });
 
       // Mark room as unavailable
-      await roomService.toggleAvailability(room.id);
+      await roomService.toggleAvailability(room._id);
 
       return {
         success: true,
         booking: {
-          id: booking.id,
+        
           roomNumber: room.number,
-          roomId: room.id,
+          roomId: room._id,
           checkInDate: booking.checkInDate.toISOString(),
           checkOutDate: booking.checkOutDate.toISOString(),
           guestId: booking.userId,
@@ -154,14 +150,14 @@ export const cancelBookingTool: DynamicStructuredTool<
       // Make room available again
       const room = await roomService.findById(booking.roomId);
       if (room && !room.availability) {
-        await roomService.toggleAvailability(room.id);
+        await roomService.toggleAvailability(room._id);
       }
 
       return {
         success: true,
         message: "Booking cancelled successfully",
         booking: {
-          id: booking.id,
+          id: booking._id,
           status: BookingStatus.Cancelled,
           cancelledAt: new Date().toISOString(),
         },
@@ -213,10 +209,10 @@ export const getBookingDetailsTool: DynamicStructuredTool<
       return {
         success: true,
         booking: {
-          id: booking.id,
+          id: booking._id,
           room: room
             ? {
-                id: room.id,
+                id: room._id,
                 number: room.number,
                 type: room.type,
                 description: room.description,
@@ -282,7 +278,7 @@ export const getGuestBookingsTool: DynamicStructuredTool<
         bookings.map(async (booking) => {
           const room = await roomService.findById(booking.roomId);
           return {
-            id: booking.id,
+            id: booking._id,
             roomId: booking.roomId,
             room: room
               ? {
@@ -414,7 +410,7 @@ export const updateBookingTool: DynamicStructuredTool<
         success: true,
         message: "Booking updated successfully",
         booking: {
-          id: updatedBooking.id,
+          id: updatedBooking._id,
           checkInDate: updatedBooking.checkInDate.toISOString(),
           checkOutDate: updatedBooking.checkOutDate.toISOString(),
           totalPrice: updatedBooking.totalPrice,
