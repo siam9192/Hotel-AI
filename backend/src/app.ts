@@ -64,8 +64,10 @@ app.use(
     res: express.Response,
     next: express.NextFunction,
   ) => {
+    const statusCode =  err.statusCode || 500 
+    const message = err.message || "Internal server error" 
     logger.error(`Server error: ${err.message}`);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(statusCode).json({ error:  message});
   },
 );
 
