@@ -1,8 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Toast from "@/components/Toast";
+import { signupService } from "@/services/auth.service";
+import { SignupServicePayload } from "@/types/service.type";
 
 interface RegisterState {
   fullName: string;
@@ -19,6 +22,7 @@ const initialState: RegisterState = {
 };
 
 export default function RegisterPage() {
+  const router = useRouter();
   const [form, setForm] = useState<RegisterState>(initialState);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [toastMessage, setToastMessage] = useState<string>("");
@@ -41,7 +45,7 @@ export default function RegisterPage() {
     return nextErrors;
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const nextErrors = validate();
     setErrors(nextErrors);
@@ -52,12 +56,26 @@ export default function RegisterPage() {
     }
 
     setSubmitting(true);
-    setTimeout(() => {
-      setSubmitting(false);
+    try {
+      const payload: SignupServicePayload = {
+        name: form.fullName,
+        email: form.email,
+        password: form.password,
+      };
+      await signupService(payload);
+
       setToastType("success");
       setToastMessage("Account created successfully. Redirecting to login...");
       setForm(initialState);
-    }, 1000);
+      setTimeout(() => router.push("/login"), 2000);
+    } catch (error) {
+      setToastType("error");
+      setToastMessage(
+        error instanceof Error ? error.message : "Registration failed",
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (

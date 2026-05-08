@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Toast from "@/components/Toast";
+import { sendChatMessage } from "@/services/chat.service";
+import { ChatMessagePayload } from "@/types/service.type";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -15,33 +17,27 @@ const defaultMessages: ChatMessage[] = [
   },
 ];
 
-function createReply(message: string) {
-  const normalized = message.toLowerCase();
-  if (normalized.includes("check-in") || normalized.includes("check in")) {
-    return "I can help with check-in details, room availability, and guest preferences. Which property would you like to manage first?";
-  }
-  if (normalized.includes("room service") || normalized.includes("service")) {
-    return "Room service is ready. I can generate a service order, estimate arrival time, or recommend in-room dining options.";
-  }
-  if (normalized.includes("recommend")) {
-    return "I recommend our rooftop lounge, spa package, and next-door dining experiences based on guest mood and season.";
-  }
-  if (normalized.includes("pricing") || normalized.includes("rate")) {
-    return "I can compare room rates, package upgrades, and yield management suggestions for better guest satisfaction.";
-  }
-  return "Thanks for your message — I have noted it and can assist with reservations, concierge tasks, or property insights. What would you like to do next?";
-}
-
 export default function Home() {
   const [messages, setMessages] = useState<ChatMessage[]>(defaultMessages);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastType, setToastType] = useState<"success" | "error">("success");
+  const [conversationId, setConversationId] = useState<string | undefined>();
   const messageListRef = useRef<HTMLDivElement | null>(null);
 
+  const chatHistoryKey = "hotel-ai-chat-history";
+  const chatConversationKey = "hotel-ai-chat-conversation";
+
   useEffect(() => {
-    const stored = window.localStorage.getItem("hotel-ai-chat-history");
+    const stored = window.sessionStorage.getItem(chatHistoryKey);
+    const storedConversationId =
+      window.sessionStorage.getItem(chatConversationKey);
+
+    if (storedConversationId) {
+      setConversationId(storedConversationId);
+    }
+
     if (stored) {
       try {
         const parsed = JSON.parse(stored) as ChatMessage[];
@@ -55,17 +51,20 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    window.localStorage.setItem(
-      "hotel-ai-chat-history",
-      JSON.stringify(messages),
-    );
+    window.sessionStorage.setItem(chatHistoryKey, JSON.stringify(messages));
+    if (conversationId) {
+      window.sessionStorage.setItem(chatConversationKey, conversationId);
+    } else {
+      window.sessionStorage.removeItem(chatConversationKey);
+    }
+
     messageListRef.current?.scrollTo({
       top: messageListRef.current.scrollHeight,
       behavior: "smooth",
     });
-  }, [messages]);
+  }, [messages, conversationId]);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     const trimmed = input.trim();
     if (!trimmed) {
       setToastType("error");
@@ -73,17 +72,37 @@ export default function Home() {
       return;
     }
 
-    setMessages((current) => [...current, { role: "user", text: trimmed }]);
+    const userMessage: ChatMessage = { role: "user", text: trimmed };
+    const nextMessages = [...messages, userMessage];
+
+    setMessages(nextMessages);
     setInput("");
     setIsTyping(true);
 
-    window.setTimeout(() => {
-      setMessages((current) => [
-        ...current,
-        { role: "assistant", text: createReply(trimmed) },
+    try {
+      const payload: ChatMessagePayload = {
+        message: trimmed,
+        conversationId,
+        history: nextMessages,
+      };
+      const response = await sendChatMessage(payload);
+
+      setMessages([
+        ...nextMessages,
+        { role: "assistant", text: response.response },
       ]);
+      setConversationId(response.conversationId);
+    } catch (error) {
+      setToastType("error");
+      setToastMessage(
+        error instanceof Error
+          ? error.message
+          : "Failed to send message. Please try again.",
+      );
+      setMessages(messages);
+    } finally {
       setIsTyping(false);
-    }, 1200);
+    }
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {

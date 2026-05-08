@@ -1,8 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Toast from "@/components/Toast";
+import { loginService } from "@/services/auth.service";
+import { LoginServicePayload } from "@/types/service.type";
 
 interface FormState {
   email: string;
@@ -17,6 +20,7 @@ const initialState: FormState = {
 };
 
 export default function LoginPage() {
+  const router = useRouter();
   const [form, setForm] = useState<FormState>(initialState);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [toastMessage, setToastMessage] = useState<string>("");
@@ -53,16 +57,29 @@ export default function LoginPage() {
     }
 
     setSubmitting(true);
-    window.localStorage.setItem(
-      "hotel-ai-login",
-      JSON.stringify({ email: form.email }),
-    );
+    try {
+      const payload: LoginServicePayload = {
+        email: form.email,
+        password: form.password,
+      };
+      const response = await loginService(payload);
 
-    setTimeout(() => {
-      setSubmitting(false);
+      // Store token in localStorage or cookies
+      window.localStorage.setItem("hotel-ai-token", response.token);
+      window.localStorage.setItem(
+        "hotel-ai-user",
+        JSON.stringify(response.user),
+      );
+
       setToastType("success");
       setToastMessage("Welcome back! Login successful.");
-    }, 900);
+      router.push("/");
+    } catch (error) {
+      setToastType("error");
+      setToastMessage(error instanceof Error ? error.message : "Login failed");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
